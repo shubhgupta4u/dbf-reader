@@ -1,7 +1,7 @@
 {
   "name": "dbf-reader",
   "version": "1.0.0",
-  "description": "A Node.js/Typescript module to read DBase DB (.dbf) file.",
+  "description": "A Node.js/Typescript module to read tabular data from the dBase DB (.dbf) file.",
   "main": "dbf.js",
   "types": "dbf.d.js",
   "scripts": {
@@ -11,7 +11,7 @@
   },
   "keywords": [
     "dbf",
-    "DBase",
+    "dBase",
     "shp",
     "shapefile",
     "reader",

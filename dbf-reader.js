@@ -192,7 +192,6 @@ class DbfReader {
                     dt.columns.push(dataColumn);
                 }
             });
-            console.log(fields);
             byteRead = recordDataStartOffset;
             for (var i = 0; i < recordCount; i++) {
                 let row = {};
@@ -223,7 +222,6 @@ class DbfReader {
                     });
                 }
             }
-            console.log(dt);
             return dt;
         }
         catch (error) {
