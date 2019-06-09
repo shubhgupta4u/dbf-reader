@@ -27,6 +27,33 @@ if (datatable) {
 ```sh
 Output should be an instance of DataTable class
 ```
+#### Case 2: Reading (.dbf) file from 'File' input HtmlElement
+```html
+<input type="file" id="avatar" (change)="onFileChange($event)" #fileInput>
+```
+```typescript
+import { Dbf } from 'dbf-reader';
+import { DataTable } from 'dbf-reader/models/dbf-file';
+import * as fs from "fs";
+ 
+onFileChange(event) {
+    let reader = new FileReader();
+    if (event.target.files && event.target.files.length > 0) {
+      let file = event.target.files[0];
+      reader.readAsArrayBuffer(file);
+      reader.onload = () => {
+        var arrayBuffer: ArrayBuffer = reader.result as ArrayBuffer;
+        if (arrayBuffer) {
+          let buffer: any = Buffer.from(arrayBuffer);
+          let datatable:DataTable = Dbf.read(buffer);
+        }
+      };
+    }
+  }
+```
+```sh
+Output should be an instance of DataTable class
+```
 ### Javascript
 #### Case 1: Reading (.dbf) file from local path 'D:\Workspace\tests\sampleFiles\sample.dbf'
 ```javascript
@@ -42,6 +69,31 @@ if (datatable) {
         });
     });
 }
+```
+#### Case 2: Reading (.dbf) file from 'File' input HtmlElement
+```html
+<input type="file" id="avatar" (change)="onFileChange($event)" #fileInput>
+```
+```javascript
+var dbf = require('dbf-reader');
+ 
+function onFileChange(event) {
+    var reader = new FileReader();
+    if (event.target.files && event.target.files.length > 0) {
+      var file = event.target.files[0];
+      reader.readAsArrayBuffer(file);
+      reader.onload = () => {
+        var arrayBuffer: ArrayBuffer = reader.result as ArrayBuffer;
+        if (arrayBuffer) {
+          var buffer: any = Buffer.from(arrayBuffer);
+          var datatable = dbf.read(buffer);
+        }
+      };
+    }
+  }
+```
+```sh
+Output should be an instance of DataTable class
 ```
 ### AMD
 ```javascript

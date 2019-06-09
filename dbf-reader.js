@@ -10,12 +10,12 @@ class DbfReader {
             do {
                 byteRead = DbfReader.fileHeaderSize + (i * DbfReader.fieldDescriptorSize) + 1;
                 let fieldNameLength = 0;
-                while (dbaseFile.subarray(byteRead + fieldNameLength, byteRead + fieldNameLength + 1).toString("utf8") != "\u0000" && fieldNameLength < 11) {
+                while (Buffer.from(dbaseFile.subarray(byteRead + fieldNameLength, byteRead + fieldNameLength + 1)).toString("utf8") != "\u0000" && fieldNameLength < 11) {
                     fieldNameLength += 1;
                 }
-                let fieldName = dbaseFile.subarray(byteRead, byteRead + fieldNameLength).toString("utf8");
+                let fieldName = Buffer.from(dbaseFile.subarray(byteRead, byteRead + fieldNameLength)).toString("utf8");
                 byteRead = byteRead + 11;
-                let fieldType = dbaseFile.subarray(byteRead, byteRead + 1).toString("utf8");
+                let fieldType = Buffer.from(dbaseFile.subarray(byteRead, byteRead + 1)).toString("utf8");
                 byteRead = byteRead + 1;
                 byteRead = byteRead + 4; //reserved
                 let fieldLength = dbaseFile.readIntLE(byteRead, 1);
@@ -25,7 +25,7 @@ class DbfReader {
                 fields.push(new DbfReader.FieldDescriptor(fieldName, fieldType, fieldLength, decimalCount));
                 byteRead = byteRead + 14; // Not required to read
                 i += 1;
-            } while (dbaseFile.subarray(byteRead, byteRead + 1).toString("utf8") != "\r");
+            } while (Buffer.from(dbaseFile.subarray(byteRead, byteRead + 1)).toString("utf8") != "\r");
             return fields;
         }
         catch (error) {
@@ -56,10 +56,10 @@ class DbfReader {
                     value = value;
                     break;
                 case "v":
-                    while (valueBuffer.subarray(byteRead + valueLength, byteRead + valueLength + 1).toString("utf8") != "\u0000" && valueLength < fieldlength) {
+                    while (Buffer.from(valueBuffer.subarray(byteRead + valueLength, byteRead + valueLength + 1)).toString("utf8") != "\u0000" && valueLength < fieldlength) {
                         valueLength += 1;
                     }
-                    value = valueBuffer.subarray(byteRead, byteRead + valueLength).toString("utf8").trim();
+                    value = Buffer.from(valueBuffer.subarray(byteRead, byteRead + valueLength)).toString("utf8").trim();
                     break;
                 case "c":
                     value = value;
@@ -195,7 +195,7 @@ class DbfReader {
             byteRead = recordDataStartOffset;
             for (var i = 0; i < recordCount; i++) {
                 let row = {};
-                if (dbaseFile.subarray(byteRead, byteRead + 1).toString('ascii') == " ") {
+                if (Buffer.from(dbaseFile.subarray(byteRead, byteRead + 1)).toString('utf8') == " ") {
                     byteRead = byteRead + 1;
                     fields.forEach(col => {
                         let type = DbfReader.getTypeName(col.fieldType);
@@ -203,7 +203,7 @@ class DbfReader {
                             col.fieldLength = 256 + col.fieldLength;
                         }
                         if (col.fieldLength > 0) {
-                            let value = DbfReader.getFieldValue(dbaseFile.subarray(byteRead, byteRead + col.fieldLength), col.fieldType, col.fieldDecimalCount, col.fieldLength);
+                            let value = DbfReader.getFieldValue(Buffer.from(dbaseFile.subarray(byteRead, byteRead + col.fieldLength)), col.fieldType, col.fieldDecimalCount, col.fieldLength);
                             if (type != "notsupported") {
                                 row[col.fieldName] = value;
                             }
