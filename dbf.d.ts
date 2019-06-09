@@ -1,15 +1,11 @@
 /// <reference types="node" />
-export declare abstract class Dbf {
+import { DbfReader } from './dbf-reader';
+import { DataTable } from './models/dbf-file';
+export declare abstract class Dbf extends DbfReader {
     /**
      * @Method: Read DBase DB (.dbf file)
      * @Param {Buffer}
-     * @Return {CSV String}
+     * @Return {DataTable}
      */
-    static read(dbaseFile: Buffer): string;
-    /**
-    * @Method: Read DBase DB (.dbf file) and convert it to CSV
-    * @Param {Buffer}
-    * @Return {CSV String}
-    */
-    static readToCsv(dbaseFile: Buffer): string;
+    static read(dbaseFile: Buffer): DataTable;
 }

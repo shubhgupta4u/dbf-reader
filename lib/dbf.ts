@@ -1,40 +1,20 @@
 import { DbfReader } from './dbf-reader'
+import { DataTable } from './models/dbf-file';
 
-export abstract class Dbf  {
+export abstract class Dbf  extends DbfReader{
     /**
      * @Method: Read DBase DB (.dbf file)
      * @Param {Buffer}
-     * @Return {CSV String}
+     * @Return {DataTable}
      */
-    public static read(dbaseFile: Buffer): string {
+    public static read(dbaseFile: Buffer): DataTable {
         try {
 
             if (!dbaseFile || dbaseFile.byteLength == 0) {
                 throw new SyntaxError("Dbase DB File can't be null or empty.");
             }
             else {
-                DbfReader.read(dbaseFile);
-                return ""
-            }
-        }
-        catch (error) {
-            throw error;
-        }
-    }
-    /**
-    * @Method: Read DBase DB (.dbf file) and convert it to CSV 
-    * @Param {Buffer}
-    * @Return {CSV String}
-    */
-    public static readToCsv(dbaseFile: Buffer): string {
-        try {
-
-            if (!dbaseFile || dbaseFile.byteLength == 0) {
-                throw new SyntaxError("Dbase DB File can't be null or empty.");
-            }
-            else {
-                DbfReader.read(dbaseFile);
-                return ""
+                return DbfReader.read(dbaseFile);
             }
         }
         catch (error) {
