@@ -8,7 +8,7 @@ bower install dbf-reader --save
 ```
 ## Usage 
 ### TypeScript
-#### Case 1:Reading (.dbf) file from local path 'D:\Workspace\tests\sampleFiles\sample.dbf'
+#### Case 1: Reading (.dbf) file from local path 'D:\Workspace\tests\sampleFiles\sample.dbf'
 ```typescript
 import { Dbf } from 'dbf-reader';
 import { DataTable } from 'dbf-reader/models/dbf-file';
@@ -27,7 +27,7 @@ if (datatable) {
 ```sh
 Output should be an instance of DataTable class
 ```
-#### Case 2:Reading (.dbf) file from 'File' input HtmlElement
+#### Case 2: Reading (.dbf) file from 'File' input HtmlElement
 ```html
 <input type="file" id="avatar" (change)="onFileChange($event)" #fileInput>
 ```
@@ -55,7 +55,7 @@ onFileChange(event) {
 Output should be an instance of DataTable class
 ```
 ### Javascript
-#### Case 1:Reading (.dbf) file from local path 'D:\Workspace\tests\sampleFiles\sample.dbf'
+#### Case 1: Reading (.dbf) file from local path 'D:\Workspace\tests\sampleFiles\sample.dbf'
 ```javascript
 var dbf = require('dbf-reader');
 var fs = require('fs');
@@ -73,7 +73,7 @@ if (datatable) {
 ```sh
 Output should be an instance of DataTable class
 ```
-#### Case 2:Reading (.dbf) file from 'File' input HtmlElement
+#### Case 2: Reading (.dbf) file from 'File' input HtmlElement
 ```html
 <input type="file" id="avatar" (change)="onFileChange($event)" #fileInput>
 ```
@@ -133,6 +133,7 @@ Numeric: Supported
 Varchar: Supported
 Varchar (binary): Supported
 ```
+```NOT Standard Property Type
 Memo: Not Supported
 Memo (binary): Not Supported
 Varbinary: Not Supported
