@@ -1,0 +1,9 @@
+.vscode/
+.nyc_output/
+coverage/
+lib/
+tests/
+package-lock.json
+package.json
+tsconfig.json
+tsconfig.production.json
