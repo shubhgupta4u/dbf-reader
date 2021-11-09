@@ -170,7 +170,7 @@ export abstract class DbfReader {
             // let day: string = Buffer.from(dbaseFile.buffer, byteRead, 1).toString('ascii');
             byteRead = byteRead + 1;
             // let lastUpdDate: string = year + month + day;
-            let recordCount: number = dbaseFile.readInt8(byteRead);
+            let recordCount: number = dbaseFile.readInt32LE(byteRead);
             byteRead = byteRead + 4;
             let recordDataStartOffset: number = dbaseFile.readInt16LE(byteRead);
             byteRead = byteRead + 8;
