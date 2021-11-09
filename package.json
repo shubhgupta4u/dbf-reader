@@ -1,6 +1,6 @@
 {
   "name": "dbf-reader",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A Node.js/Typescript module to read tabular data from the dBase DB (.dbf) file.",
   "main": "dbf.js",
   "types": "dbf.d.js",
