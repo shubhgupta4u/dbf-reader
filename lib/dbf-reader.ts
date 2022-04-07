@@ -1,10 +1,11 @@
 import { DataTable, Column } from "./models/dbf-file";
+import { decode, encodingExists} from "iconv-lite";
 
 export abstract class DbfReader {
 
     static readonly fileHeaderSize: number = 31;
     static readonly fieldDescriptorSize: number = 32
-    private static readFieldsInfo(dbaseFile: Buffer): Array<any> {
+    private static readFieldsInfo(dbaseFile: Buffer, encoding: string): Array<any> {
         try {
             let byteRead: number;
             let fields: Array<any> = new Array<any>();
@@ -12,12 +13,12 @@ export abstract class DbfReader {
             do {
                 byteRead = DbfReader.fileHeaderSize + (i * DbfReader.fieldDescriptorSize) + 1;
                 let fieldNameLength: number = 0;
-                while (Buffer.from(dbaseFile.subarray(byteRead + fieldNameLength, byteRead + fieldNameLength + 1)).toString("utf8") != "\u0000" && fieldNameLength < 11) {
+                while (decode(Buffer.from(dbaseFile.subarray(byteRead + fieldNameLength, byteRead + fieldNameLength + 1)), encoding) != "\u0000" && fieldNameLength < 11) {
                     fieldNameLength += 1;
                 }
-                let fieldName: string =Buffer.from(dbaseFile.subarray(byteRead, byteRead + fieldNameLength)).toString("utf8");
+                let fieldName: string =decode(Buffer.from(dbaseFile.subarray(byteRead, byteRead + fieldNameLength)), encoding);
                 byteRead = byteRead + 11;
-                let fieldType: string = Buffer.from(dbaseFile.subarray(byteRead, byteRead + 1)).toString("utf8")
+                let fieldType: string = decode(Buffer.from(dbaseFile.subarray(byteRead, byteRead + 1)), encoding)
                 byteRead = byteRead + 1;
                 byteRead = byteRead + 4; //reserved
                 let fieldLength: number = dbaseFile.readIntLE(byteRead, 1);
@@ -27,7 +28,7 @@ export abstract class DbfReader {
                 fields.push(new DbfReader.FieldDescriptor(fieldName, fieldType, fieldLength, decimalCount));
                 byteRead = byteRead + 14; // Not required to read
                 i += 1;
-            } while (Buffer.from(dbaseFile.subarray(byteRead, byteRead + 1)).toString("utf8") != "\r")
+            } while (decode(Buffer.from(dbaseFile.subarray(byteRead, byteRead + 1)), encoding) != "\r")
             return fields;
         } catch (error) {
             throw error;
@@ -47,8 +48,8 @@ export abstract class DbfReader {
         }
         return null;
     }
-    private static getFieldValue(valueBuffer: Buffer, type: string, decimalCount: number, fieldlength: number): any {
-        let value: any = valueBuffer.toString('utf8').trim();
+    private static getFieldValue(valueBuffer: Buffer, type: string, decimalCount: number, fieldlength: number, encoding: string): any {
+        let value: any = decode(valueBuffer, encoding).trim();
         let byteRead: number = 0;
         let valueLength: number = 0;
         try {
@@ -57,10 +58,10 @@ export abstract class DbfReader {
                     value = value;
                     break;
                 case "v":
-                    while (Buffer.from(valueBuffer.subarray(byteRead + valueLength, byteRead + valueLength + 1)).toString("utf8") != "\u0000" && valueLength < fieldlength) {
+                    while (decode(Buffer.from(valueBuffer.subarray(byteRead + valueLength, byteRead + valueLength + 1)), encoding) != "\u0000" && valueLength < fieldlength) {
                         valueLength += 1;
                     }
-                    value = Buffer.from(valueBuffer.subarray(byteRead, byteRead + valueLength)).toString("utf8").trim();
+                    value = decode(Buffer.from(valueBuffer.subarray(byteRead, byteRead + valueLength)), encoding).trim();
                     break;
                 case "c": value = value;
                     break;
@@ -157,9 +158,14 @@ export abstract class DbfReader {
     /**
      * read Dbase DB File
      */
-    protected static read(dbaseFile: Buffer): DataTable {
+    protected static read(dbaseFile: Buffer, encoding: string): DataTable {
         let dt = new DataTable();
         try {
+            if (!encodingExists(encoding)) {
+              console.warn(`Encoding "${encoding}" does not exist. Using "utf8" encoding as fallback`);
+              encoding = "utf8";
+            }
+
             let byteRead: number = 0;
             // let dbfFileType: string = Buffer.from(dbaseFile.buffer, byteRead, 1).toString('hex');
             byteRead = byteRead + 1;
@@ -177,7 +183,7 @@ export abstract class DbfReader {
             // let recordSize: number = dbaseFile.readInt16LE(byteRead);
             byteRead = byteRead + 8;
 
-            let fields: Array<any> = DbfReader.readFieldsInfo(dbaseFile);
+            let fields: Array<any> = DbfReader.readFieldsInfo(dbaseFile, encoding);
             byteRead = recordDataStartOffset + 1;
 
             fields.forEach((f) => {
@@ -191,7 +197,7 @@ export abstract class DbfReader {
             byteRead = recordDataStartOffset;
             for (var i = 0; i < recordCount; i++) {
                 let row: any = {};
-                if (Buffer.from(dbaseFile.subarray(byteRead, byteRead + 1)).toString('utf8') == " ") {
+                if (decode(Buffer.from(dbaseFile.subarray(byteRead, byteRead + 1)), encoding) == " ") {
                     byteRead = byteRead + 1;
                     fields.forEach(col => {
                         let type = DbfReader.getTypeName(col.fieldType);
@@ -199,7 +205,7 @@ export abstract class DbfReader {
                             col.fieldLength = 256 + col.fieldLength;
                         }
                         if (col.fieldLength > 0) {
-                            let value: any = DbfReader.getFieldValue(Buffer.from(dbaseFile.subarray(byteRead, byteRead + col.fieldLength)), col.fieldType, col.fieldDecimalCount, col.fieldLength);
+                            let value: any = DbfReader.getFieldValue(Buffer.from(dbaseFile.subarray(byteRead, byteRead + col.fieldLength)), col.fieldType, col.fieldDecimalCount, col.fieldLength, encoding);
                             if (type != "notsupported") {
                                 row[col.fieldName] = value;
                             }
