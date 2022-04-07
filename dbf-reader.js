@@ -1,8 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const dbf_file_1 = require("./models/dbf-file");
+const iconv_lite_1 = require("iconv-lite");
 class DbfReader {
-    static readFieldsInfo(dbaseFile) {
+    static readFieldsInfo(dbaseFile, encoding) {
         try {
             let byteRead;
             let fields = new Array();
@@ -10,12 +11,12 @@ class DbfReader {
             do {
                 byteRead = DbfReader.fileHeaderSize + (i * DbfReader.fieldDescriptorSize) + 1;
                 let fieldNameLength = 0;
-                while (Buffer.from(dbaseFile.subarray(byteRead + fieldNameLength, byteRead + fieldNameLength + 1)).toString("utf8") != "\u0000" && fieldNameLength < 11) {
+                while (iconv_lite_1.decode(Buffer.from(dbaseFile.subarray(byteRead + fieldNameLength, byteRead + fieldNameLength + 1)), encoding) != "\u0000" && fieldNameLength < 11) {
                     fieldNameLength += 1;
                 }
-                let fieldName = Buffer.from(dbaseFile.subarray(byteRead, byteRead + fieldNameLength)).toString("utf8");
+                let fieldName = iconv_lite_1.decode(Buffer.from(dbaseFile.subarray(byteRead, byteRead + fieldNameLength)), encoding);
                 byteRead = byteRead + 11;
-                let fieldType = Buffer.from(dbaseFile.subarray(byteRead, byteRead + 1)).toString("utf8");
+                let fieldType = iconv_lite_1.decode(Buffer.from(dbaseFile.subarray(byteRead, byteRead + 1)), encoding);
                 byteRead = byteRead + 1;
                 byteRead = byteRead + 4; //reserved
                 let fieldLength = dbaseFile.readIntLE(byteRead, 1);
@@ -25,7 +26,7 @@ class DbfReader {
                 fields.push(new DbfReader.FieldDescriptor(fieldName, fieldType, fieldLength, decimalCount));
                 byteRead = byteRead + 14; // Not required to read
                 i += 1;
-            } while (Buffer.from(dbaseFile.subarray(byteRead, byteRead + 1)).toString("utf8") != "\r");
+            } while (iconv_lite_1.decode(Buffer.from(dbaseFile.subarray(byteRead, byteRead + 1)), encoding) != "\r");
             return fields;
         }
         catch (error) {
@@ -46,8 +47,8 @@ class DbfReader {
         }
         return null;
     }
-    static getFieldValue(valueBuffer, type, decimalCount, fieldlength) {
-        let value = valueBuffer.toString('utf8').trim();
+    static getFieldValue(valueBuffer, type, decimalCount, fieldlength, encoding) {
+        let value = iconv_lite_1.decode(valueBuffer, encoding).trim();
         let byteRead = 0;
         let valueLength = 0;
         try {
@@ -56,10 +57,10 @@ class DbfReader {
                     value = value;
                     break;
                 case "v":
-                    while (Buffer.from(valueBuffer.subarray(byteRead + valueLength, byteRead + valueLength + 1)).toString("utf8") != "\u0000" && valueLength < fieldlength) {
+                    while (iconv_lite_1.decode(Buffer.from(valueBuffer.subarray(byteRead + valueLength, byteRead + valueLength + 1)), encoding) != "\u0000" && valueLength < fieldlength) {
                         valueLength += 1;
                     }
-                    value = Buffer.from(valueBuffer.subarray(byteRead, byteRead + valueLength)).toString("utf8").trim();
+                    value = iconv_lite_1.decode(Buffer.from(valueBuffer.subarray(byteRead, byteRead + valueLength)), encoding).trim();
                     break;
                 case "c":
                     value = value;
@@ -163,9 +164,13 @@ class DbfReader {
     /**
      * read Dbase DB File
      */
-    static read(dbaseFile) {
+    static read(dbaseFile, encoding) {
         let dt = new dbf_file_1.DataTable();
         try {
+            if (!iconv_lite_1.encodingExists(encoding)) {
+                console.warn(`Encoding "${encoding}" does not exist. Using "utf8" encoding as fallback`);
+                encoding = "utf8";
+            }
             let byteRead = 0;
             // let dbfFileType: string = Buffer.from(dbaseFile.buffer, byteRead, 1).toString('hex');
             byteRead = byteRead + 1;
@@ -182,7 +187,7 @@ class DbfReader {
             byteRead = byteRead + 8;
             // let recordSize: number = dbaseFile.readInt16LE(byteRead);
             byteRead = byteRead + 8;
-            let fields = DbfReader.readFieldsInfo(dbaseFile);
+            let fields = DbfReader.readFieldsInfo(dbaseFile, encoding);
             byteRead = recordDataStartOffset + 1;
             fields.forEach((f) => {
                 let dataColumn = new dbf_file_1.Column();
@@ -195,7 +200,7 @@ class DbfReader {
             byteRead = recordDataStartOffset;
             for (var i = 0; i < recordCount; i++) {
                 let row = {};
-                if (Buffer.from(dbaseFile.subarray(byteRead, byteRead + 1)).toString('utf8') == " ") {
+                if (iconv_lite_1.decode(Buffer.from(dbaseFile.subarray(byteRead, byteRead + 1)), encoding) == " ") {
                     byteRead = byteRead + 1;
                     fields.forEach(col => {
                         let type = DbfReader.getTypeName(col.fieldType);
@@ -203,7 +208,7 @@ class DbfReader {
                             col.fieldLength = 256 + col.fieldLength;
                         }
                         if (col.fieldLength > 0) {
-                            let value = DbfReader.getFieldValue(Buffer.from(dbaseFile.subarray(byteRead, byteRead + col.fieldLength)), col.fieldType, col.fieldDecimalCount, col.fieldLength);
+                            let value = DbfReader.getFieldValue(Buffer.from(dbaseFile.subarray(byteRead, byteRead + col.fieldLength)), col.fieldType, col.fieldDecimalCount, col.fieldLength, encoding);
                             if (type != "notsupported") {
                                 row[col.fieldName] = value;
                             }
