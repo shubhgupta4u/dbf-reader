@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.DbfReader = void 0;
 const dbf_file_1 = require("./models/dbf-file");
 class DbfReader {
     static readFieldsInfo(dbaseFile) {
@@ -229,6 +230,7 @@ class DbfReader {
         }
     }
 }
+exports.DbfReader = DbfReader;
 DbfReader.fileHeaderSize = 31;
 DbfReader.fieldDescriptorSize = 32;
 DbfReader.FieldDescriptor = class {
@@ -239,4 +241,3 @@ DbfReader.FieldDescriptor = class {
         this.fieldDecimalCount = fieldDecimalCount;
     }
 };
-exports.DbfReader = DbfReader;

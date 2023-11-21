@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Dbf = void 0;
 const dbf_reader_1 = require("./dbf-reader");
 class Dbf extends dbf_reader_1.DbfReader {
     /**
