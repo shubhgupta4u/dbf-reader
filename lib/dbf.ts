@@ -7,7 +7,7 @@ export abstract class Dbf  extends DbfReader{
      * @Param {Buffer}
      * @Return {DataTable}
      */
-    public static read(dbaseFile: Buffer, encoder: BufferEncoding): DataTable {
+    public static read(dbaseFile: Buffer, encoder: BufferEncoding = 'utf-8'): DataTable {
         try {
 
             if (!dbaseFile || dbaseFile.byteLength == 0) {
