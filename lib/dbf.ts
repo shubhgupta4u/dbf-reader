@@ -7,14 +7,14 @@ export abstract class Dbf  extends DbfReader{
      * @Param {Buffer}
      * @Return {DataTable}
      */
-    public static read(dbaseFile: Buffer): DataTable {
+    public static read(dbaseFile: Buffer, encoder: BufferEncoding): DataTable {
         try {
 
             if (!dbaseFile || dbaseFile.byteLength == 0) {
                 throw new SyntaxError("Dbase DB File can't be null or empty.");
             }
             else {
-                return DbfReader.read(dbaseFile);
+                return DbfReader.read(dbaseFile, encoder);
             }
         }
         catch (error) {

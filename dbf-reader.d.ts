@@ -11,6 +11,6 @@ export declare abstract class DbfReader {
     /**
      * read Dbase DB File
      */
-    protected static read(dbaseFile: Buffer): DataTable;
+    protected static read(dbaseFile: Buffer, encoder: BufferEncoding): DataTable;
     private static FieldDescriptor;
 }

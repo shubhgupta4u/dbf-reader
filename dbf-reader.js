@@ -1,8 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.DbfReader = void 0;
 const dbf_file_1 = require("./models/dbf-file");
 class DbfReader {
-    static readFieldsInfo(dbaseFile) {
+    static readFieldsInfo(dbaseFile, encoder) {
         try {
             let byteRead;
             let fields = new Array();
@@ -10,12 +11,12 @@ class DbfReader {
             do {
                 byteRead = DbfReader.fileHeaderSize + (i * DbfReader.fieldDescriptorSize) + 1;
                 let fieldNameLength = 0;
-                while (Buffer.from(dbaseFile.subarray(byteRead + fieldNameLength, byteRead + fieldNameLength + 1)).toString("utf8") != "\u0000" && fieldNameLength < 11) {
+                while (Buffer.from(dbaseFile.subarray(byteRead + fieldNameLength, byteRead + fieldNameLength + 1)).toString(encoder) != "\u0000" && fieldNameLength < 11) {
                     fieldNameLength += 1;
                 }
-                let fieldName = Buffer.from(dbaseFile.subarray(byteRead, byteRead + fieldNameLength)).toString("utf8");
+                let fieldName = Buffer.from(dbaseFile.subarray(byteRead, byteRead + fieldNameLength)).toString(encoder);
                 byteRead = byteRead + 11;
-                let fieldType = Buffer.from(dbaseFile.subarray(byteRead, byteRead + 1)).toString("utf8");
+                let fieldType = Buffer.from(dbaseFile.subarray(byteRead, byteRead + 1)).toString(encoder);
                 byteRead = byteRead + 1;
                 byteRead = byteRead + 4; //reserved
                 let fieldLength = dbaseFile.readIntLE(byteRead, 1);
@@ -25,7 +26,7 @@ class DbfReader {
                 fields.push(new DbfReader.FieldDescriptor(fieldName, fieldType, fieldLength, decimalCount));
                 byteRead = byteRead + 14; // Not required to read
                 i += 1;
-            } while (Buffer.from(dbaseFile.subarray(byteRead, byteRead + 1)).toString("utf8") != "\r");
+            } while (Buffer.from(dbaseFile.subarray(byteRead, byteRead + 1)).toString(encoder) != "\r");
             return fields;
         }
         catch (error) {
@@ -46,8 +47,8 @@ class DbfReader {
         }
         return null;
     }
-    static getFieldValue(valueBuffer, type, decimalCount, fieldlength) {
-        let value = valueBuffer.toString('utf8').trim();
+    static getFieldValue(valueBuffer, type, decimalCount, fieldlength, encoder) {
+        let value = valueBuffer.toString(encoder).trim();
         let byteRead = 0;
         let valueLength = 0;
         try {
@@ -56,10 +57,10 @@ class DbfReader {
                     value = value;
                     break;
                 case "v":
-                    while (Buffer.from(valueBuffer.subarray(byteRead + valueLength, byteRead + valueLength + 1)).toString("utf8") != "\u0000" && valueLength < fieldlength) {
+                    while (Buffer.from(valueBuffer.subarray(byteRead + valueLength, byteRead + valueLength + 1)).toString(encoder) != "\u0000" && valueLength < fieldlength) {
                         valueLength += 1;
                     }
-                    value = Buffer.from(valueBuffer.subarray(byteRead, byteRead + valueLength)).toString("utf8").trim();
+                    value = Buffer.from(valueBuffer.subarray(byteRead, byteRead + valueLength)).toString(encoder).trim();
                     break;
                 case "c":
                     value = value;
@@ -163,7 +164,7 @@ class DbfReader {
     /**
      * read Dbase DB File
      */
-    static read(dbaseFile) {
+    static read(dbaseFile, encoder) {
         let dt = new dbf_file_1.DataTable();
         try {
             let byteRead = 0;
@@ -182,7 +183,7 @@ class DbfReader {
             byteRead = byteRead + 8;
             // let recordSize: number = dbaseFile.readInt16LE(byteRead);
             byteRead = byteRead + 8;
-            let fields = DbfReader.readFieldsInfo(dbaseFile);
+            let fields = DbfReader.readFieldsInfo(dbaseFile, encoder);
             byteRead = recordDataStartOffset + 1;
             fields.forEach((f) => {
                 let dataColumn = new dbf_file_1.Column();
@@ -195,7 +196,7 @@ class DbfReader {
             byteRead = recordDataStartOffset;
             for (var i = 0; i < recordCount; i++) {
                 let row = {};
-                if (Buffer.from(dbaseFile.subarray(byteRead, byteRead + 1)).toString('utf8') == " ") {
+                if (Buffer.from(dbaseFile.subarray(byteRead, byteRead + 1)).toString(encoder) == " ") {
                     byteRead = byteRead + 1;
                     fields.forEach(col => {
                         let type = DbfReader.getTypeName(col.fieldType);
@@ -203,7 +204,7 @@ class DbfReader {
                             col.fieldLength = 256 + col.fieldLength;
                         }
                         if (col.fieldLength > 0) {
-                            let value = DbfReader.getFieldValue(Buffer.from(dbaseFile.subarray(byteRead, byteRead + col.fieldLength)), col.fieldType, col.fieldDecimalCount, col.fieldLength);
+                            let value = DbfReader.getFieldValue(Buffer.from(dbaseFile.subarray(byteRead, byteRead + col.fieldLength)), col.fieldType, col.fieldDecimalCount, col.fieldLength, encoder);
                             if (type != "notsupported") {
                                 row[col.fieldName] = value;
                             }
@@ -229,6 +230,7 @@ class DbfReader {
         }
     }
 }
+exports.DbfReader = DbfReader;
 DbfReader.fileHeaderSize = 31;
 DbfReader.fieldDescriptorSize = 32;
 DbfReader.FieldDescriptor = class {
@@ -239,4 +241,3 @@ DbfReader.FieldDescriptor = class {
         this.fieldDecimalCount = fieldDecimalCount;
     }
 };
-exports.DbfReader = DbfReader;

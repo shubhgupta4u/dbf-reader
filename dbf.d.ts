@@ -7,5 +7,5 @@ export declare abstract class Dbf extends DbfReader {
      * @Param {Buffer}
      * @Return {DataTable}
      */
-    static read(dbaseFile: Buffer): DataTable;
+    static read(dbaseFile: Buffer, encoder: BufferEncoding): DataTable;
 }

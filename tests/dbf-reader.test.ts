@@ -8,7 +8,7 @@ describe('Reading dbf file', function () {
     var pathPrefix='E:/Drive D/Workspace/dbf-reader/dbf-reader';
 
     let buffer:Buffer=fs.readFileSync(pathPrefix+'/tests/sample-dbf/sample2-polygon.dbf')
-    let datatable: DataTable = Dbf.read(buffer);
+    let datatable: DataTable = Dbf.read(buffer, 'utf-8');
     should().exist(datatable);
     should().equal(datatable.columns.length,35);
     should().equal(datatable.rows.length,9);
@@ -17,7 +17,7 @@ describe('Reading dbf file', function () {
     var pathPrefix='E:/Drive D/Workspace/dbf-reader/dbf-reader';
 
     let buffer:Buffer=fs.readFileSync(pathPrefix+'/tests/sample-dbf/db4.dbf')
-    let datatable: DataTable = Dbf.read(buffer);
+    let datatable: DataTable = Dbf.read(buffer, 'utf-8');
     should().exist(datatable);
     should().equal(datatable.columns.length,3);
     should().equal(datatable.rows.length,1);
@@ -26,7 +26,7 @@ describe('Reading dbf file', function () {
     var pathPrefix='E:/Drive D/Workspace/dbf-reader/dbf-reader';
 
     let buffer:Buffer=fs.readFileSync(pathPrefix+'/tests/sample-dbf/db4window.dbf')
-    let datatable: DataTable = Dbf.read(buffer);
+    let datatable: DataTable = Dbf.read(buffer, 'utf-8');
     should().exist(datatable);
     should().equal(datatable.columns.length,2);
     should().equal(datatable.rows.length,3);
@@ -35,7 +35,7 @@ describe('Reading dbf file', function () {
     var pathPrefix='E:/Drive D/Workspace/dbf-reader/dbf-reader';
 
     let buffer:Buffer=fs.readFileSync(pathPrefix+'/tests/sample-dbf/VisualFoxPro.dbf')
-    let datatable: DataTable = Dbf.read(buffer);
+    let datatable: DataTable = Dbf.read(buffer, 'utf-8');
     should().exist(datatable);
     should().equal(datatable.columns.length,2);
     should().equal(datatable.rows.length,2);
@@ -44,7 +44,7 @@ describe('Reading dbf file', function () {
     var pathPrefix='E:/Drive D/Workspace/dbf-reader/dbf-reader';
 
     let buffer:Buffer=fs.readFileSync(pathPrefix+'/tests/sample-dbf/DateDbf.dbf')
-    let datatable: DataTable = Dbf.read(buffer);
+    let datatable: DataTable = Dbf.read(buffer, 'utf-8');
     should().exist(datatable);
     should().equal(datatable.columns.length,1);
     should().equal(datatable.rows.length,10);
